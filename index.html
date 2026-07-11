@@ -1,0 +1,44 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script type="module">
+import { saveResult } from "./firebase.js";
+
+/* LIVE CHART DATA */
+let labels = [];
+let data = [];
+
+const chart = new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: {
+        labels,
+        datasets: [{
+            label: "Disease Score",
+            data,
+            borderColor: "red"
+        }]
+    }
+});
+
+/* FETCH AI RESULT */
+async function getAIResult(file){
+
+    let form = new FormData();
+    form.append("image", file);
+
+    let res = await fetch("http://localhost:5000/predict", {
+        method: "POST",
+        body: form
+    });
+
+    let result = await res.json();
+
+    // SAVE TO FIREBASE
+    saveResult(result);
+
+    // UPDATE CHART
+    labels.push(new Date().toLocaleTimeString());
+    data.push(result.confidence * 100);
+
+    chart.update();
+}
+</script>
